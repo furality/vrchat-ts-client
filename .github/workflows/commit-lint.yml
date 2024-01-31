@@ -1,0 +1,23 @@
+name: commit-lint
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    # Skip PRs comming from dev since they have already been qualified when they merged in
+    if: github.head_ref != 'dev'
+
+    steps:
+      - name: Commit lint
+        # Dependabot sometimes makes some really long commit messages and I can't stop it
+        continue-on-error: ${{ contains(github.event.pull_request.labels.*.name, 'dependencies') || github.actor == 'dependabot[bot]' }}
+        uses: ahmadnassri/action-conventional-commit-lint@v2.1.17
+        with:
+          token: ${{ github.token }}

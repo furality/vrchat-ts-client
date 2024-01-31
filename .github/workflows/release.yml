@@ -1,0 +1,36 @@
+name: release
+
+on:
+  repository_dispatch:
+    types:
+      - spec_release
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  publish-client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Download spec
+        run: wget https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml -O openapi.yaml
+
+      - name: Upload spec artifact
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          name: openapi.yaml
+          path: openapi.yaml
+
+      - name: Generate & publish client
+        uses: furality/generate-esm-api-client@v4
+        with:
+          author: Furality
+          package_name: '@furality/vrchat-ts-client'
+          spec_file: openapi.yaml
+          repo_url: git+ssh://git@github.com/${{ github.repository }}.git
+          npm_token: ${{ secrets.GITHUB_TOKEN }}
