@@ -4,6 +4,7 @@ on:
   repository_dispatch:
     types:
       - spec_release
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}
