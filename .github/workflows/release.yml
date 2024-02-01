@@ -1,6 +1,8 @@
 name: release
 
 on:
+  schedule:
+    - cron:  '0 */6 * * *'
   repository_dispatch:
     types:
       - spec_release
@@ -10,7 +12,37 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
+  check-new-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    outputs:
+      vrc-api-version: ${{ steps.vrc-api-version.outputs.tag }}
+      npm-version: ${{ steps.npm-info.outputs.package-version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
+          repository: "vrchatapi/specification"
+
+      - name: Get VRChat API Release Version
+        id: vrc-api-version
+        uses: "WyriHaximus/github-action-get-previous-tag@v1.4.0"
+        with:
+          prefix: 'release/'
+
+      - name: Get Registry Info
+        id: npm-info
+        run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          echo "package-version=release/$(npm view --registry https://npm.pkg.github.com @furality/vrchat-ts-client dist-tags.latest)" >> $GITHUB_OUTPUT
+
   publish-client:
+    needs: check-new-release
+    if: needs.check-new-release.outputs.vrc-api-version != needs.check-new-release.outputs.npm-version
+
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
