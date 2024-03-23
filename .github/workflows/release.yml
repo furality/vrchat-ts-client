@@ -9,6 +9,7 @@ on:
         description: "Add snapshot timestamp to versions"
         required: false
         type: boolean
+
 concurrency:
   group: ${{ github.workflow }}
 
@@ -42,7 +43,7 @@ jobs:
 
   publish-client:
     needs: check-new-release
-    if: needs.check-new-release.outputs.vrc-api-version != needs.check-new-release.outputs.npm-version
+    if: needs.check-new-release.outputs.vrc-api-version != needs.check-new-release.outputs.npm-version || inputs.snapshot
 
     runs-on: ubuntu-latest
     timeout-minutes: 5
