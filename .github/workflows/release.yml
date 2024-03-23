@@ -3,11 +3,12 @@ name: release
 on:
   schedule:
     - cron:  '0 */6 * * *'
-  repository_dispatch:
-    types:
-      - spec_release
   workflow_dispatch:
-
+    inputs:
+      snapshot:
+        description: "Add snapshot timestamp to versions"
+        required: false
+        type: boolean
 concurrency:
   group: ${{ github.workflow }}
 
@@ -67,3 +68,4 @@ jobs:
           spec_file: openapi.yaml
           repo_url: git+ssh://git@github.com/${{ github.repository }}.git
           npm_token: ${{ secrets.GITHUB_TOKEN }}
+          snapshot: ${{ inputs.snapshot }}
