@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v4.1.3
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
           repository: "vrchatapi/specification"
@@ -50,13 +50,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v4.1.3
 
       - name: Download spec
         run: wget https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml -O openapi.yaml
 
       - name: Upload spec artifact
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v4.3.3
         with:
           name: openapi.yaml
           path: openapi.yaml
