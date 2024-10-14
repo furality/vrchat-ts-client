@@ -56,7 +56,7 @@ jobs:
         run: wget https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml -O openapi.yaml
 
       - name: Upload spec artifact
-        uses: actions/upload-artifact@v4.4.1
+        uses: actions/upload-artifact@v4.4.3
         with:
           name: openapi.yaml
           path: openapi.yaml
