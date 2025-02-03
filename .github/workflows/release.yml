@@ -66,7 +66,7 @@ jobs:
           path: openapi.yaml
 
       - name: Generate & publish client
-        uses: furality/generate-esm-api-client@v4
+        uses: furality/generate-esm-api-client@v5
         with:
           author: Furality
           package_name: "@furality/vrchat-ts-client"
