@@ -28,14 +28,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
           repository: "vrchatapi/specification"
 
       - name: Get VRChat API Release Version
         id: vrc-api-version
-        uses: "WyriHaximus/github-action-get-previous-tag@v1.4.0"
+        uses: "WyriHaximus/github-action-get-previous-tag@v2.0.0"
         with:
           prefix: "release/"
 
@@ -54,13 +54,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6.0.2
 
       - name: Download spec
         run: wget ${{ inputs.spec || 'https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml' }} -O openapi.yaml
 
       - name: Upload spec artifact
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v6.0.0
         with:
           name: openapi.yaml
           path: openapi.yaml
