@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
           repository: "vrchatapi/specification"
@@ -54,19 +54,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Download spec
         run: wget ${{ inputs.spec || 'https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml' }} -O openapi.yaml
 
       - name: Upload spec artifact
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: openapi.yaml
           path: openapi.yaml
 
       - name: Generate & publish client
-        uses: furality/generate-esm-api-client@v6
+        uses: furality/generate-esm-api-client@v7
         with:
           author: Furality
           package_name: "@furality/vrchat-ts-client"
