@@ -28,14 +28,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
           repository: "vrchatapi/specification"
 
       - name: Get VRChat API Release Version
         id: vrc-api-version
-        uses: "WyriHaximus/github-action-get-previous-tag@v2.0.0"
+        uses: "WyriHaximus/github-action-get-previous-tag@v2.1.0"
         with:
           prefix: "release/"
 
@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
 
       - name: Download spec
         run: wget ${{ inputs.spec || 'https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml' }} -O openapi.yaml
@@ -66,7 +66,7 @@ jobs:
           path: openapi.yaml
 
       - name: Generate & publish client
-        uses: furality/generate-esm-api-client@v7
+        uses: furality/generate-esm-api-client@v8
         with:
           author: Furality
           package_name: "@furality/vrchat-ts-client"
