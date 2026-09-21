@@ -23,27 +23,36 @@ jobs:
     timeout-minutes: 5
 
     outputs:
-      vrc-api-version: ${{ steps.vrc-api-version.outputs.tag }}
+      vrc-api-version: ${{ steps.vrc-api-version.outputs.version }}
+      spec-url: ${{ steps.vrc-api-version.outputs.spec-url }}
       npm-version: ${{ steps.npm-info.outputs.package-version }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7.0.1
-        with:
-          fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tag
-          repository: "vrchatapi/specification"
-
+      # vrchatapi/specification retired the `release/*` tags at 1.20.5 and now ships specs as
+      # `v*` GitHub Releases, with nightlies flagged as prereleases. Its gh-pages copy of
+      # openapi.yaml is no longer updated either, so the releases are the source of truth.
       - name: Get VRChat API Release Version
         id: vrc-api-version
-        uses: "WyriHaximus/github-action-get-previous-tag@v2.1.0"
-        with:
-          prefix: "release/"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="$(gh api repos/vrchatapi/specification/releases --paginate \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' \
+            | sort -V | tail -1)"
+          if [ -z "$tag" ]; then
+            echo "::error::Found no stable release in vrchatapi/specification"
+            exit 1
+          fi
+          echo "Latest stable spec release: $tag"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+          echo "spec-url=https://github.com/vrchatapi/specification/releases/download/$tag/openapi.yaml" >> "$GITHUB_OUTPUT"
 
       - name: Get Registry Info
         id: npm-info
         run: |
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
-          echo "package-version=release/$(npm view --registry https://npm.pkg.github.com @furality/vrchat-ts-client dist-tags.latest)" >> $GITHUB_OUTPUT
+          echo "package-version=$(npm view --registry https://npm.pkg.github.com @furality/vrchat-ts-client dist-tags.latest)" >> $GITHUB_OUTPUT
 
   publish-client:
     needs: check-new-release
@@ -57,7 +66,21 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Download spec
-        run: wget ${{ inputs.spec || 'https://raw.githubusercontent.com/vrchatapi/specification/gh-pages/openapi.yaml' }} -O openapi.yaml
+        run: wget ${{ inputs.spec || needs.check-new-release.outputs.spec-url }} -O openapi.yaml
+
+      # `Transaction.agreement` is an inline `oneOf: [string, $ref TransactionAgreement]`.
+      # openapi-generator names it `Transaction_agreement`, which normalizes to the same TS
+      # model name/file as the real `TransactionAgreement` schema, producing the self-referential
+      # `type TransactionAgreement = string | TransactionAgreement` (TS2456). Giving the inline
+      # schema an explicit title takes it out of the collision.
+      # Remove once fixed upstream in vrchatapi/specification.
+      - name: Disambiguate inline Transaction.agreement schema
+        run: |
+          yq -i 'with(
+            .components.schemas.Transaction.properties
+              | select(has("agreement")) | .agreement | select(has("oneOf"));
+            .title = "TransactionAgreementOrString"
+          )' openapi.yaml
 
       - name: Upload spec artifact
         uses: actions/upload-artifact@v7.0.1
