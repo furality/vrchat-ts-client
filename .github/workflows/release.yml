@@ -83,7 +83,7 @@ jobs:
           )' openapi.yaml
 
       - name: Upload spec artifact
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: openapi.yaml
           path: openapi.yaml
